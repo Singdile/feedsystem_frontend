@@ -1,49 +1,67 @@
 /* ============================================================
-   Design Tokens — 视频时间线产品（暗色、暖珊瑚品牌色）
-   tokens-first：颜色/字阶/间距/圆角/动效/焦点全部走变量
+   Industrial — 广播控制台
+   纯黑表面 + 全站等宽字体 + 单一信号色(酸绿) + 扁平 1px 边框
+   无渐变 / 无辉光阴影 / 无圆角。数字一律 tabular-nums。
+   tokens-first：所有颜色/字阶/间距/动效走变量
    ============================================================ */
 
 :root {
   /* ---- 色彩语义 ---- */
-  --bg: oklch(16% 0.012 30);
-  --surface: oklch(21% 0.014 30);
-  --surface-2: oklch(26% 0.016 30);
-  --surface-hover: oklch(28% 0.018 30);
+  --bg: #0b0c0a;                        /* 暖黑底 */
+  --surface: #12130f;                   /* 表面 1 */
+  --surface-2: #171814;                 /* 表面 2 */
+  --surface-hover: #20221b;
 
-  --text: oklch(96% 0.006 30);
-  --text-2: oklch(72% 0.012 30);
-  --text-3: oklch(56% 0.012 30);
+  --text: #e6e8e0;                      /* 主文字（近白） */
+  --text-2: #989d90;
+  --text-3: #5c6157;
 
-  --border: oklch(33% 0.012 30);
-  --border-strong: oklch(44% 0.014 30);
+  --border: #262924;
+  --border-strong: #3a3e35;
 
-  --accent: oklch(70% 0.16 42);            /* 品牌色：暖珊瑚 */
-  --accent-hover: oklch(76% 0.15 42);
-  --accent-active: oklch(64% 0.17 42);
-  --accent-soft: oklch(30% 0.06 42);       /* 品牌色浅底 */
-  --on-accent: oklch(22% 0.04 42);
+  /* 单一信号色：酸绿（广播信号） */
+  --signal: #c6ff4a;
+  --signal-hover: #d5ff6e;
+  --signal-active: #a9ea2c;
+  --signal-soft: rgba(198, 255, 74, 0.08);
 
-  --danger: oklch(64% 0.19 25);
-  --danger-hover: oklch(70% 0.18 25);
-  --danger-soft: oklch(28% 0.06 25);
-  --success: oklch(70% 0.15 145);
-  --warning: oklch(80% 0.13 85);
+  /* 兼容旧引用名：cyan/magenta/violet 全部落到信号色（保持单一） */
+  --cyan: var(--signal);
+  --magenta: var(--signal);
+  --violet: #2b2e27;
 
-  --focus-ring: var(--accent);
+  --accent: var(--signal);
+  --accent-hover: var(--signal-hover);
+  --accent-active: var(--signal-active);
+  --accent-soft: var(--signal-soft);
+  --on-accent: #0b0c0a;                 /* 酸绿底上的黑字 */
 
-  /* ---- 字体 ---- */
-  --font-sans: system-ui, -apple-system, "Segoe UI", "PingFang SC",
-    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-base: 1rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
-  --font-size-2xl: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
-  --line-tight: 1.3;
-  --line-normal: 1.55;
+  /* 渐变全部扁平化为信号色 */
+  --grad-brand: var(--signal);
+  --grad-mesh: var(--surface-2);
 
-  /* ---- 间距（4px 系统）---- */
+  --danger: #ff3b30;                    /* 仅功能性错误/删除 */
+  --danger-hover: #ff5c51;
+  --danger-soft: rgba(255, 59, 48, 0.1);
+  --success: var(--signal);
+  --warning: #ffb800;
+
+  --focus-ring: var(--signal);
+
+  /* ---- 字体（全站等宽） ---- */
+  --font-sans: "JetBrains Mono", "IBM Plex Mono", ui-monospace, "SF Mono",
+    "Menlo", "Consolas", "Liberation Mono", "Courier New", monospace;
+  --font-size-xs: 0.72rem;
+  --font-size-sm: 0.83rem;
+  --font-size-base: 0.95rem;
+  --font-size-lg: 1.05rem;
+  --font-size-xl: clamp(1.2rem, 1rem + 0.8vw, 1.6rem);
+  --font-size-2xl: clamp(1.5rem, 1.1rem + 1.6vw, 2.2rem);
+  --font-display: clamp(1.4rem, 1rem + 2.4vw, 2.3rem); /* 展示字重（等宽加粗） */
+  --line-tight: 1.2;
+  --line-normal: 1.6;
+
+  /* ---- 间距（4px 系统） ---- */
   --sp-1: 0.25rem;
   --sp-2: 0.5rem;
   --sp-3: 0.75rem;
@@ -55,27 +73,28 @@
   --sp-12: 3rem;
   --sp-16: 4rem;
 
-  /* ---- 圆角 ---- */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
-  --radius-full: 9999px;
+  /* ---- 圆角：扁平 ---- */
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-full: 0;
 
-  /* ---- 阴影（暗色）---- */
-  --shadow-sm: 0 1px 3px oklch(0% 0 0 / 0.35);
-  --shadow-md: 0 8px 24px oklch(0% 0 0 / 0.45);
-  --shadow-lg: 0 16px 48px oklch(0% 0 0 / 0.55);
+  /* ---- 阴影：无 ---- */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
 
-  /* ---- 动效（统一一套）---- */
-  --dur-fast: 150ms;
-  --dur-base: 220ms;
+  /* ---- 动效 ---- */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --ease-spring: cubic-bezier(0.25, 0.8, 0.25, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --trans-colors: color var(--dur-fast) var(--ease-out),
     background-color var(--dur-fast) var(--ease-out),
     border-color var(--dur-fast) var(--ease-out),
     box-shadow var(--dur-fast) var(--ease-out);
-  --trans-transform: transform var(--dur-base) var(--ease-out);
+  --trans-transform: transform var(--dur-base) var(--ease-spring);
   --trans-opacity: opacity var(--dur-base) var(--ease-out);
 
   /* ---- 尺寸 ---- */
@@ -120,6 +139,7 @@ body {
   font-family: var(--font-sans);
   font-size: var(--font-size-base);
   line-height: var(--line-normal);
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -154,12 +174,39 @@ textarea {
 :focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
-  border-radius: var(--radius-sm);
 }
 
 ::selection {
   background: var(--accent-soft);
   color: var(--text);
+}
+
+/* 等宽大写标签（工业 kicker） */
+.kicker {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-3);
+}
+
+/* ============================================================
+   Industrial 工具类
+   ============================================================ */
+
+.gradient-text {
+  color: var(--signal);
+}
+
+.neon {
+  color: var(--signal);
+}
+
+.neon-cyan {
+  color: var(--signal);
+}
+
+.mesh-surface {
+  background: var(--grad-mesh);
 }
 
 /* ============================================================
@@ -189,10 +236,12 @@ textarea {
   margin: 0;
   font-size: var(--font-size-xl);
   line-height: var(--line-tight);
+  color: var(--signal);
 }
 
 /* ============================================================
-   按钮（primary / ghost / danger 层级分明）
+   按钮（primary=酸绿实底 / ghost=描边 / danger=红描边）
+   扁平，1px 边框，无阴影，无圆角
    ============================================================ */
 
 .btn {
@@ -202,9 +251,11 @@ textarea {
   gap: var(--sp-2);
   height: 44px;
   padding-inline: var(--sp-5);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
   font-size: var(--font-size-base);
   font-weight: 600;
+  letter-spacing: 0.02em;
   transition: var(--trans-colors), var(--trans-transform);
   white-space: nowrap;
   user-select: none;
@@ -215,46 +266,48 @@ textarea {
 }
 
 .btn:disabled {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .btn-primary {
-  background: var(--accent);
+  background: var(--signal);
   color: var(--on-accent);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: var(--signal-hover);
 }
 
 .btn-primary:active:not(:disabled) {
-  background: var(--accent-active);
+  background: var(--signal-active);
 }
 
 .btn-ghost {
-  background: var(--surface-2);
+  background: var(--surface);
   color: var(--text);
-  border: 1px solid var(--border);
+  border-color: var(--border-strong);
 }
 
 .btn-ghost:hover:not(:disabled) {
   background: var(--surface-hover);
-  border-color: var(--border-strong);
+  border-color: var(--signal);
+  color: var(--signal);
 }
 
 .btn-danger {
   background: transparent;
   color: var(--danger);
-  border: 1px solid color-mix(in oklch, var(--danger) 45%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 55%, transparent);
 }
 
 .btn-danger:hover:not(:disabled) {
   background: var(--danger-soft);
+  border-color: var(--danger);
 }
 
 .btn-sm {
-  height: 36px;
+  height: 34px;
   padding-inline: var(--sp-4);
   font-size: var(--font-size-sm);
 }
@@ -280,9 +333,9 @@ textarea {
 .textarea {
   width: 100%;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
-  padding: 0.75rem var(--sp-4);
+  padding: 0.7rem var(--sp-4);
   transition: var(--trans-colors);
 }
 
@@ -303,8 +356,8 @@ textarea {
 
 .input:focus,
 .textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  border-color: var(--signal);
+  box-shadow: 0 0 0 1px var(--signal);
 }
 
 .field-error {
@@ -328,22 +381,22 @@ textarea {
 }
 
 .state .state-title {
-  font-size: var(--font-size-lg);
-  color: var(--text);
-  font-weight: 600;
+  font-size: var(--font-size-xl);
+  color: var(--signal);
+  font-weight: 700;
 }
 
 .state .state-hint {
   color: var(--text-3);
-  max-width: 40ch;
+  max-width: 44ch;
 }
 
 .spinner {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border: 2px solid var(--border-strong);
-  border-top-color: var(--accent);
-  border-radius: var(--radius-full);
+  border-top-color: var(--signal);
+  border-radius: 0;
   animation: spin 0.8s linear infinite;
 }
 
@@ -362,24 +415,22 @@ textarea {
   color: var(--text-3);
 }
 
-/* 进度条 */
+/* 进度条（信号色实条） */
 .progress {
   height: 6px;
-  border-radius: var(--radius-full);
   background: var(--surface-2);
   overflow: hidden;
 }
 
 .progress-bar {
   height: 100%;
-  background: var(--accent);
-  border-radius: var(--radius-full);
+  background: var(--signal);
   transition: width var(--dur-base) var(--ease-out);
 }
 
 /* 提示条 */
 .alert {
-  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
   padding: var(--sp-3) var(--sp-4);
   font-size: var(--font-size-sm);
   margin-bottom: var(--sp-4);
@@ -388,9 +439,11 @@ textarea {
 .alert-error {
   background: var(--danger-soft);
   color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
 }
 
 .alert-success {
-  background: color-mix(in oklch, var(--success) 15%, transparent);
-  color: var(--success);
+  background: var(--accent-soft);
+  color: var(--signal);
+  border-color: color-mix(in srgb, var(--signal) 45%, transparent);
 }

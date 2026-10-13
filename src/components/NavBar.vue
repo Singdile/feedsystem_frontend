@@ -1,9 +1,21 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import NotificationBell from './NotificationBell.vue'
+
+defineProps<{ peek?: boolean }>()
 
 const auth = useAuthStore()
 const router = useRouter()
+
+const revealed = ref(false)
+function onPeekEnter() {
+  revealed.value = true
+}
+function onPeekLeave() {
+  revealed.value = false
+}
 
 async function onLogout() {
   await auth.logout()
@@ -12,7 +24,8 @@ async function onLogout() {
 </script>
 
 <template>
-  <header class="nav">
+  <div v-if="peek" class="peek-strip" aria-hidden="true" @mouseenter="onPeekEnter"></div>
+  <header class="nav" :class="{ 'is-peek': peek, 'is-revealed': peek && revealed }" @mouseleave="onPeekLeave">
     <div class="container nav-inner">
       <router-link to="/" class="brand" aria-label="FeedSystem 首页">
         <span class="brand-dot" aria-hidden="true"></span>
@@ -21,12 +34,14 @@ async function onLogout() {
 
       <nav class="nav-links" aria-label="主导航">
         <router-link to="/" class="nav-link">时间线</router-link>
+        <router-link to="/popular" class="nav-link">热门视频</router-link>
         <router-link v-if="auth.isLoggedIn" to="/publish" class="nav-link">发布视频</router-link>
-        <router-link v-if="auth.isLoggedIn" to="/me" class="nav-link">我的视频</router-link>
+        <router-link v-if="auth.isLoggedIn" to="/me" class="nav-link">我的</router-link>
       </nav>
 
       <div class="nav-user">
         <template v-if="auth.isLoggedIn">
+          <NotificationBell />
           <span class="user-name">{{ auth.account?.username }}</span>
           <button class="btn btn-ghost btn-sm" @click="onLogout">退出</button>
         </template>
@@ -50,6 +65,31 @@ async function onLogout() {
   border-bottom: 1px solid var(--border);
 }
 
+/* feed 页 hover 顶部滑出 */
+.nav.is-peek {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  transform: translateY(-100%);
+  pointer-events: none;
+  transition: transform 200ms var(--ease-out);
+}
+
+.nav.is-peek.is-revealed {
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.peek-strip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  z-index: calc(var(--z-fixed) + 1);
+}
+
 .nav-inner {
   height: 100%;
   display: flex;
@@ -63,14 +103,12 @@ async function onLogout() {
   gap: var(--sp-2);
   font-weight: 700;
   font-size: var(--font-size-lg);
-  letter-spacing: -0.01em;
 }
 
 .brand-dot {
   width: 10px;
   height: 10px;
-  border-radius: var(--radius-full);
-  background: var(--accent);
+  background: var(--signal);
 }
 
 .nav-links {
@@ -81,20 +119,21 @@ async function onLogout() {
 
 .nav-link {
   padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--radius-md);
   color: var(--text-2);
   font-size: var(--font-size-sm);
   font-weight: 600;
+  letter-spacing: 0.03em;
   transition: var(--trans-colors);
 }
 
 .nav-link:hover {
-  color: var(--text);
+  color: var(--signal);
   background: var(--surface-2);
 }
 
 .nav-link.router-link-active {
-  color: var(--text);
+  color: var(--signal);
+  background: var(--signal-soft);
 }
 
 .nav-user {

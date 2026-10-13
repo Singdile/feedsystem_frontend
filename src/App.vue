@@ -7,7 +7,7 @@ const isFeed = () => route.name === 'feed'
 </script>
 
 <template>
-  <NavBar v-if="!isFeed()" />
+  <NavBar :peek="isFeed()" />
   <main class="app-main" :class="{ 'is-feed': isFeed() }">
     <router-view />
   </main>

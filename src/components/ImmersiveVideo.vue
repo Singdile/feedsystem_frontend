@@ -22,7 +22,10 @@ const props = withDefaults(
   { mode: 'contain', showInfo: false, showFullscreen: true, preload: 'metadata', muted: false },
 )
 
-const emit = defineEmits<{ (e: 'state', v: { paused: boolean }): void }>()
+const emit = defineEmits<{
+  (e: 'state', v: { paused: boolean }): void
+  (e: 'progress', v: { current: number; duration: number }): void
+}>()
 
 const root = ref<HTMLElement | null>(null)
 const video = ref<HTMLVideoElement | null>(null)
@@ -90,6 +93,7 @@ function syncMeta() {
   const d = effDur()
   if (d) duration.value = d
   updateBuffered()
+  emit('progress', { current: current.value, duration: duration.value })
 }
 
 function onTime() {
@@ -98,6 +102,7 @@ function onTime() {
   current.value = v.currentTime
   if (!duration.value) syncMeta()
   updateBuffered()
+  emit('progress', { current: current.value, duration: duration.value })
 }
 
 function onPlay() {

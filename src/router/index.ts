@@ -5,6 +5,8 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', name: 'feed', component: () => import('../views/FeedView.vue') },
+    { path: '/popular', name: 'popular', component: () => import('../views/PopularView.vue') },
+    { path: '/u/:id', name: 'author', component: () => import('../views/AuthorView.vue') },
     { path: '/videos/:id', name: 'video-detail', component: () => import('../views/VideoDetailView.vue') },
     { path: '/login', name: 'login', component: () => import('../views/LoginView.vue'), meta: { guestOnly: true } },
     { path: '/register', name: 'register', component: () => import('../views/RegisterView.vue'), meta: { guestOnly: true } },

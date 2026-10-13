@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import type { VideoView } from '../api/types'
 import { formatDate } from '../utils/format'
+import { proxiedUrl } from '../api/minio'
 
 defineProps<{ video: VideoView }>()
 
@@ -12,10 +13,10 @@ const loaded = ref(false)
 <template>
   <router-link :to="`/videos/${video.id}`" class="video-card">
     <div class="thumb">
-      <div v-if="!loaded && !imgError" class="thumb-skeleton" aria-hidden="true"></div>
+      <div v-if="video.cover_url && !loaded && !imgError" class="thumb-skeleton" aria-hidden="true"></div>
       <img
-        v-if="!imgError"
-        :src="video.cover_url"
+        v-if="video.cover_url && !imgError"
+        :src="video.cover_url ? proxiedUrl(video.cover_url) : ''"
         :alt="video.title"
         loading="lazy"
         @load="loaded = true"
@@ -31,6 +32,9 @@ const loaded = ref(false)
     <div class="meta">
       <h3 class="title">{{ video.title }}</h3>
       <p class="byline">{{ video.author.username }} · {{ formatDate(video.created_at) }}</p>
+      <p v-if="video.hash_tags && video.hash_tags.length" class="tags">
+        <span v-for="t in video.hash_tags" :key="t" class="chip">#{{ t }}</span>
+      </p>
     </div>
   </router-link>
 </template>
@@ -128,5 +132,21 @@ const loaded = ref(false)
   margin: 0;
   font-size: var(--font-size-sm);
   color: var(--text-3);
+}
+
+.tags {
+  margin: var(--sp-2) 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--signal);
+  padding: 2px 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
 }
 </style>

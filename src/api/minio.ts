@@ -12,7 +12,13 @@ export function proxiedUrl(url: string): string {
 }
 
 export async function uploadPart(presignedUrl: string, blob: Blob): Promise<void> {
-  const res = await fetch(proxiedUrl(presignedUrl), { method: 'PUT', body: blob })
+  const res = await fetch(proxiedUrl(presignedUrl), {
+    method: 'PUT',
+    body: blob,
+    // 分片是视频，必须带 video/mp4：否则 MinIO 以 octet-stream 存储，
+    // 浏览器 + nosniff 会拒绝渲染为视频（播放失败）。
+    headers: { 'Content-Type': 'video/mp4' },
+  })
   if (!res.ok) throw new Error(`分片上传失败 HTTP ${res.status}`)
 }
 

@@ -69,22 +69,39 @@ async function onSubmit() {
   align-items: center;
   justify-content: center;
   padding: var(--sp-6);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-page::before {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  background: var(--grad-mesh);
+  opacity: 0.14;
+  filter: blur(80px);
+  pointer-events: none;
 }
 
 .auth-card {
   width: 100%;
   max-width: 400px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius-xl);
   padding: var(--sp-8);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
+  position: relative;
 }
 
 .auth-title {
   margin: 0;
   font-size: var(--font-size-2xl);
   line-height: var(--line-tight);
+  background: var(--grad-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .auth-sub {

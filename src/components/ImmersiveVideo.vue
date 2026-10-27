@@ -188,18 +188,61 @@ function onTlUp() {
   }, 0)
 }
 
-async function toggleFull() {
-  if (isFull.value) {
-    await document.exitFullscreen().catch(() => {})
-  } else if (root.value) {
-    await root.value.requestFullscreen().catch(() => {})
-    void video.value?.play().catch(() => {})
+function isIOS() {
+  return (
+    /iP(hone|ad|od)/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  )
+}
+
+async function enterFullscreen() {
+  const el = root.value
+  const v = video.value
+  if (!el) return
+
+  // iOS Safari：原生视频全屏（自动转横屏 + 系统控制条）
+  if (isIOS() && v && typeof (v as unknown as { webkitEnterFullscreen?: () => void }).webkitEnterFullscreen === 'function') {
+    ;(v as unknown as { webkitEnterFullscreen: () => void }).webkitEnterFullscreen()
+    return
   }
+
+  await el.requestFullscreen().catch(() => {})
+  // Android Chrome：进入全屏后锁横屏，确保竖屏点全屏 → 横屏沉浸
+  try {
+    const ori = screen.orientation as unknown as { lock?: (o: string) => Promise<void> }
+    if (ori?.lock) await ori.lock('landscape')
+  } catch {
+    /* 不支持锁定向的浏览器忽略 */
+  }
+  void v?.play().catch(() => {})
+}
+
+async function exitFullscreen() {
+  if (document.fullscreenElement) await document.exitFullscreen().catch(() => {})
+  try {
+    const ori = screen.orientation as unknown as { unlock?: () => void }
+    ori?.unlock?.()
+  } catch {
+    /* ignore */
+  }
+}
+
+async function toggleFull() {
+  if (isFull.value) await exitFullscreen()
+  else await enterFullscreen()
 }
 
 function onFullChange() {
   isFull.value = !!document.fullscreenElement && document.fullscreenElement === root.value
-  if (!isFull.value) showControls()
+  if (!isFull.value) {
+    try {
+      const ori = screen.orientation as unknown as { unlock?: () => void }
+      ori?.unlock?.()
+    } catch {
+      /* ignore */
+    }
+    showControls()
+  }
 }
 
 onMounted(() => {
@@ -553,9 +596,14 @@ onUnmounted(() => {
     bottom: 108px;
   }
 
-  /* 竖屏：cover 改为 contain，完整呈现视频（顶部/底部留黑边）；
-     进入全屏(is-full)时仍走 cover 沉浸铺满横屏 */
+  /* 竖屏：cover 改为 contain，完整呈现视频（顶部/底部留黑边） */
   .imm.mode-cover:not(.is-full) .imm-video {
+    object-fit: contain;
+  }
+
+  /* 移动端全屏：同样 contain（横屏时竖屏视频留左右黑边，完整展示；
+     若定向锁失败仍保持竖屏，也完整展示，不会裁切内容） */
+  .imm.is-full .imm-video {
     object-fit: contain;
   }
 }

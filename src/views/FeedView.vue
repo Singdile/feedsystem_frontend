@@ -278,6 +278,11 @@ async function shareLink(id: number) {
     showToast('复制失败，请手动复制链接')
   }
 }
+
+// 侧栏「全屏」：进入全屏（移动端自动转横屏沉浸查看）
+function goFullscreen(i: number) {
+  comps.get(i)?.toggleFullscreen()
+}
 </script>
 
 <template>
@@ -314,7 +319,7 @@ async function shareLink(id: number) {
         :poster="v.cover_url ? proxiedUrl(v.cover_url) : undefined"
         mode="cover"
         :show-info="false"
-        :show-fullscreen="false"
+        :show-fullscreen="true"
         :muted="true"
         :preload="i === activeIdx ? 'auto' : 'metadata'"
         :ref="(c: any) => trackComp(i, c)"
@@ -394,6 +399,16 @@ async function shareLink(id: number) {
           <span class="rail-label">分享</span>
         </button>
 
+        <button class="rail-btn" aria-label="全屏横屏查看" @click="goFullscreen(i)">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 3h6v6" />
+            <path d="M9 21H3v-6" />
+            <path d="M21 3l-7 7" />
+            <path d="M3 21l7-7" />
+          </svg>
+          <span class="rail-label">全屏</span>
+        </button>
+
         <template v-if="auth.isLoggedIn">
           <router-link to="/publish" class="rail-btn rail-link" aria-label="发布">发布</router-link>
           <router-link to="/me" class="rail-btn rail-link" aria-label="我的">我的</router-link>
@@ -430,7 +445,11 @@ async function shareLink(id: number) {
 <style scoped>
 .feed-page {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh; /* 移动端 URL 栏动态视口 */
+  height: 100dvh;
   overflow-y: auto;
   scroll-snap-type: y mandatory;
   overscroll-behavior: contain;
@@ -443,7 +462,7 @@ async function shareLink(id: number) {
 
 .feed-item {
   position: relative;
-  height: 100dvh;
+  height: 100%;
   scroll-snap-align: start;
   scroll-snap-stop: always;
   overflow: hidden;
@@ -684,7 +703,7 @@ async function shareLink(id: number) {
 
 /* ---- 全屏状态 ---- */
 .full-state {
-  height: 100dvh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -744,18 +763,47 @@ async function shareLink(id: number) {
 }
 
 @media (max-width: 640px) {
+  .top-bar {
+    padding: 12px 12px;
+  }
+  .index-chip {
+    padding: 4px 10px;
+    font-size: var(--font-size-xs);
+  }
   .rail {
-    right: 10px;
-    bottom: 120px;
+    right: 8px;
+    bottom: 96px;
     gap: 12px;
   }
   .rail-btn {
-    width: 50px;
+    width: 48px;
+    padding: 8px 0;
+  }
+  .avatar-ring {
+    width: 48px;
+    height: 48px;
+  }
+  .avatar {
+    width: 46px;
+    height: 46px;
+    font-size: var(--font-size-base);
+  }
+  .follow-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 13px;
+    bottom: -10px;
   }
   .meta-block {
     left: 12px;
-    right: 74px;
-    bottom: 88px;
+    right: 62px;
+    bottom: 78px;
+  }
+  .meta-title {
+    margin-bottom: 6px;
+  }
+  .meta-desc {
+    -webkit-line-clamp: 1;
   }
   .brand-name {
     display: none;

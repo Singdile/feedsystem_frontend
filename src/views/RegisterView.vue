@@ -85,6 +85,7 @@ async function onSubmit() {
 <style scoped>
 .auth-page {
   min-height: calc(100vh - var(--nav-h));
+  min-height: calc(100dvh - var(--nav-h));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -149,5 +150,14 @@ async function onSubmit() {
 
 .auth-switch a:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .auth-page {
+    padding: var(--sp-4);
+  }
+  .auth-card {
+    padding: var(--sp-6) var(--sp-5);
+  }
 }
 </style>

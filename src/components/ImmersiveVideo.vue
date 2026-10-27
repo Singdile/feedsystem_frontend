@@ -132,7 +132,7 @@ function pause() {
   video.value?.pause()
 }
 
-defineExpose({ play, pause, togglePlay })
+defineExpose({ play, pause, togglePlay, toggleFullscreen: toggleFull })
 
 function seekTo(clientX: number) {
   const tl = timeline.value
@@ -551,6 +551,12 @@ onUnmounted(() => {
     left: 12px;
     right: 64px;
     bottom: 108px;
+  }
+
+  /* 竖屏：cover 改为 contain，完整呈现视频（顶部/底部留黑边）；
+     进入全屏(is-full)时仍走 cover 沉浸铺满横屏 */
+  .imm.mode-cover:not(.is-full) .imm-video {
+    object-fit: contain;
   }
 }
 </style>

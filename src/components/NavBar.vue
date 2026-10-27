@@ -149,16 +149,42 @@ async function onLogout() {
 
 @media (max-width: 640px) {
   .nav-inner {
-    gap: var(--sp-3);
+    gap: var(--sp-2);
+  }
+  .nav-links {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav-links::-webkit-scrollbar {
+    display: none;
   }
   .nav-link {
-    padding: var(--sp-2);
+    padding: var(--sp-2) var(--sp-2);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+  }
+  /* 移动端隐藏次要导航（发布/我的 走 feed 侧栏与我的页头），避免溢出 */
+  .nav-link[href='/publish'],
+  .nav-link[href='/me'] {
+    display: none;
   }
   .brand-name {
     display: none;
   }
   .user-name {
     display: none;
+  }
+  .nav-user {
+    gap: var(--sp-2);
+  }
+  .nav-user .btn-sm {
+    height: 32px;
+    padding-inline: var(--sp-3);
+  }
+  /* feed 页 hover 触发条：加高便于触控 */
+  .peek-strip {
+    height: 28px;
   }
 }
 </style>

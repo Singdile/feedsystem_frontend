@@ -222,6 +222,7 @@ textarea {
 .page {
   padding-block: var(--sp-6);
   min-height: calc(100vh - var(--nav-h));
+  min-height: calc(100dvh - var(--nav-h));
 }
 
 .section-head {

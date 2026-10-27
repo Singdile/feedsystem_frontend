@@ -399,6 +399,38 @@ watch(tab, async () => {
   gap: var(--sp-5);
 }
 
+@media (max-width: 640px) {
+  .tabs {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .tab {
+    flex: none;
+    padding: 10px 12px;
+    font-size: var(--font-size-sm);
+  }
+  .profile-bar {
+    gap: var(--sp-3);
+    padding: var(--sp-3);
+  }
+  .profile-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: var(--font-size-base);
+  }
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-3);
+  }
+  .people {
+    gap: var(--sp-2);
+  }
+}
+
 .cell {
   display: flex;
   flex-direction: column;

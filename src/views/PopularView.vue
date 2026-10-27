@@ -96,4 +96,11 @@ onUnmounted(() => observer?.disconnect())
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: var(--sp-5);
 }
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-3);
+  }
+}
 </style>

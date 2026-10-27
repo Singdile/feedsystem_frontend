@@ -224,4 +224,14 @@ async function onSubmit() {
 .submit-btn {
   width: 100%;
 }
+
+@media (max-width: 640px) {
+  .panel {
+    padding: var(--sp-4);
+  }
+  .cover-preview {
+    width: 100%;
+    max-width: 260px;
+  }
+}
 </style>

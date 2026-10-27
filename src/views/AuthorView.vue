@@ -288,6 +288,26 @@ onUnmounted(() => observer?.disconnect())
   gap: var(--sp-5);
 }
 
+@media (max-width: 640px) {
+  .author-head {
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+  }
+  .author-avatar {
+    width: 56px;
+    height: 56px;
+    font-size: var(--font-size-lg);
+  }
+  .follow-btn {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-3);
+  }
+}
+
 .toast {
   position: fixed;
   bottom: 40px;

@@ -16,6 +16,7 @@ const isFeed = () => route.name === 'feed'
 <style scoped>
 .app-main {
   min-height: calc(100vh - var(--nav-h));
+  min-height: calc(100dvh - var(--nav-h));
 }
 
 .app-main.is-feed {

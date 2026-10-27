@@ -414,4 +414,30 @@ async function onDelete() {
   opacity: 0;
   transform: translateX(-50%) translateY(12px);
 }
+
+@media (max-width: 640px) {
+  .player-box {
+    aspect-ratio: 9 / 16;
+    max-height: 72dvh;
+  }
+  .detail-head {
+    flex-direction: column;
+    gap: var(--sp-3);
+  }
+  .head-actions {
+    width: 100%;
+  }
+  .head-actions .btn {
+    flex: 1;
+  }
+  .actions {
+    gap: var(--sp-2);
+  }
+  .action-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 10px 8px;
+    font-size: var(--font-size-xs);
+  }
+}
 </style>

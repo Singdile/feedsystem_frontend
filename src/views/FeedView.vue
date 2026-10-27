@@ -472,6 +472,7 @@ function goFullscreen(i: number) {
   position: relative;
   height: 100%;
   scroll-snap-align: start;
+  scroll-snap-stop: always;
   overflow: hidden;
   background: #000;
 }

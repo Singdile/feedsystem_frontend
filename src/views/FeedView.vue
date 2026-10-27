@@ -314,6 +314,7 @@ function goFullscreen(i: number) {
       :ref="(el: any) => trackItem(i, el)"
     >
       <ImmersiveVideo
+        v-if="Math.abs(i - activeIdx) <= 1"
         class="feed-video"
         :src="proxiedUrl(v.play_url)"
         :poster="v.cover_url ? proxiedUrl(v.cover_url) : undefined"
@@ -321,11 +322,18 @@ function goFullscreen(i: number) {
         :show-info="false"
         :show-fullscreen="true"
         :muted="true"
-        :preload="i === activeIdx ? 'auto' : 'metadata'"
+        :preload="'auto'"
         :ref="(c: any) => trackComp(i, c)"
         @state="(s: any) => onState(i, s)"
         @progress="(p: any) => onProgress(i, p)"
       />
+      <!-- 非相邻项只挂封面占位，减少视频元素数量，滚动更丝滑 -->
+      <div
+        v-else
+        class="feed-video feed-video-placeholder"
+        :style="v.cover_url ? { backgroundImage: `url('${proxiedUrl(v.cover_url)}')` } : undefined"
+        aria-hidden="true"
+      ></div>
 
       <!-- 当前视频顶部霓虹进度线 -->
       <div
@@ -464,13 +472,20 @@ function goFullscreen(i: number) {
   position: relative;
   height: 100%;
   scroll-snap-align: start;
-  scroll-snap-stop: always;
   overflow: hidden;
   background: #000;
 }
 
 .feed-video {
   height: 100%;
+}
+
+.feed-video-placeholder {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-color: #000;
 }
 
 /* ---- 顶部栏 ---- */
@@ -511,8 +526,7 @@ function goFullscreen(i: number) {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.08em;
   padding: 5px 12px;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.72);
   border: 1px solid var(--border-strong);
 }
 
@@ -603,8 +617,7 @@ function goFullscreen(i: number) {
   align-items: center;
   gap: 4px;
   color: #fff;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.68);
   border: 1px solid var(--border-strong);
   padding: 10px 0;
   transition: var(--trans-colors), var(--trans-transform);
@@ -728,8 +741,7 @@ function goFullscreen(i: number) {
   align-items: center;
   gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-4);
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.78);
   color: var(--text-2);
   font-size: var(--font-size-sm);
   border: 1px solid var(--border-strong);

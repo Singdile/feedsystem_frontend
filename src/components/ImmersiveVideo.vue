@@ -218,6 +218,10 @@ async function enterFullscreen() {
 }
 
 async function exitFullscreen() {
+  if (unlockTimer) {
+    clearTimeout(unlockTimer)
+    unlockTimer = null
+  }
   if (document.fullscreenElement) await document.exitFullscreen().catch(() => {})
   try {
     const ori = screen.orientation as unknown as { unlock?: () => void }
@@ -232,16 +236,22 @@ async function toggleFull() {
   else await enterFullscreen()
 }
 
+// 延迟解锁定时器：旋转瞬间 fullscreenchange 可能瞬态报告非全屏，
+// 延迟后确认真的退出了才 unlock，避免“横屏又弹回竖屏”
+let unlockTimer: ReturnType<typeof setTimeout> | null = null
+
 function onFullChange() {
-  isFull.value = !!document.fullscreenElement && document.fullscreenElement === root.value
-  if (!isFull.value) {
-    try {
+  const fs = !!document.fullscreenElement && document.fullscreenElement === root.value
+  isFull.value = fs
+  showControls()
+  if (!fs) {
+    if (unlockTimer) clearTimeout(unlockTimer)
+    unlockTimer = setTimeout(() => {
+      unlockTimer = null
+      if (document.fullscreenElement) return // 仍在全屏 → 保持横屏锁定
       const ori = screen.orientation as unknown as { unlock?: () => void }
       ori?.unlock?.()
-    } catch {
-      /* ignore */
-    }
-    showControls()
+    }, 500)
   }
 }
 
@@ -252,6 +262,7 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('fullscreenchange', onFullChange)
   if (hideTimer) clearTimeout(hideTimer)
+  if (unlockTimer) clearTimeout(unlockTimer)
 })
 </script>
 

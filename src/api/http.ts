@@ -95,7 +95,13 @@ export async function request<T>(path: string, opts: RequestOpts = {}): Promise<
 
   const json = await res.json().catch(() => ({ code: res.status, msg: '请求失败', data: [] as unknown[] }))
   if (json.code !== 0) {
-    const msg = typeof json.msg === 'string' && json.msg ? json.msg : `请求失败（${res.status}）`
+    let msg: string
+    // 后端限流：HTTP 429 + {"error":"too many requests"}，非标准信封
+    if (res.status === 429) {
+      msg = '操作太频繁，请稍后再试'
+    } else {
+      msg = typeof json.msg === 'string' && json.msg ? json.msg : `请求失败（${res.status}）`
+    }
     throw new Error(msg)
   }
   return json.data[0] as T

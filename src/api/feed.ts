@@ -8,6 +8,14 @@ export function listFeed(cursor?: string, limit = 10): Promise<ListResult> {
   return request<ListResult>(`/feed?${q.toString()}`)
 }
 
+// 关注流（需登录）：已关注作者的视频，游标分页，返回结构与主 feed 一致
+export function listFollowingFeed(cursor?: string, limit = 10): Promise<ListResult> {
+  const q = new URLSearchParams()
+  if (cursor) q.set('cursor', cursor)
+  q.set('limit', String(limit))
+  return request<ListResult>(`/feed/following?${q.toString()}`)
+}
+
 export interface PopularResult {
   items: VideoView[]
   as_of: number

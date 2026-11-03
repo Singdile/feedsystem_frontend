@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { listFeed } from '../api/feed'
+import { useRoute, useRouter } from 'vue-router'
+import { listFeed, listFollowingFeed } from '../api/feed'
 import type { VideoView } from '../api/types'
 import { setRating } from '../api/rating'
 import { follow, isFollowed, unfollow } from '../api/social'
@@ -13,6 +13,7 @@ import CommentDrawer from '../components/CommentDrawer.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 
 const container = ref<HTMLElement | null>(null)
 const items = ref<VideoView[]>([])
@@ -20,6 +21,12 @@ const nextCursor = ref('')
 const loading = ref(false)
 const error = ref('')
 const done = ref(false)
+
+// 顶部切换：推荐（主 feed）/ 关注（关注流，需登录）
+// 支持深链 ?tab=following（未登录时回落到推荐）
+const feedTab = ref<'recommend' | 'following'>(
+  route.query.tab === 'following' && auth.isLoggedIn ? 'following' : 'recommend',
+)
 
 const activeIdx = ref(0)
 const pausedMap = ref<Record<number, boolean>>({})
@@ -149,21 +156,53 @@ function goAuthor(v: VideoView) {
   router.push({ name: 'author', params: { id: v.author.id }, query: { name: v.author.username } })
 }
 
-// 登录态变化时刷新 feed（status 盖章与关注态依赖登录）
+// 重置 feed 状态（切换 tab / 登录态变化时使用）
+function resetFeedState() {
+  activeObserver?.disconnect()
+  comps.forEach((c) => c.pause())
+  comps.clear()
+  itemEls.clear()
+  items.value = []
+  nextCursor.value = ''
+  done.value = false
+  error.value = ''
+  activeIdx.value = 0
+  pausedMap.value = {}
+  progressMap.value = {}
+}
+
+async function reloadFeed() {
+  resetFeedState()
+  await loadMore()
+  if (items.value.length) {
+    await nextTick()
+    observeActive()
+    playAt(0)
+    loadActiveFollow()
+  }
+}
+
+async function switchTab(tab: 'recommend' | 'following') {
+  if (tab === feedTab.value) return
+  if (tab === 'following' && !auth.isLoggedIn) {
+    router.push({ name: 'login', query: { redirect: '/' } })
+    return
+  }
+  feedTab.value = tab
+  router.replace({ name: 'feed', query: tab === 'following' ? { tab: 'following' } : {} }).catch(() => {})
+  await reloadFeed()
+}
+
+// 登录态变化时刷新 feed（status 盖章与关注态依赖登录）；登出时若在关注流则回到推荐
 watch(
   () => auth.isLoggedIn,
-  async () => {
+  async (loggedIn) => {
     followState.value = {}
-    items.value = []
-    nextCursor.value = ''
-    done.value = false
-    activeIdx.value = 0
-    await loadMore()
-    if (items.value.length) {
-      await nextTick()
-      playAt(0)
-      loadActiveFollow()
+    if (!loggedIn && feedTab.value === 'following') {
+      feedTab.value = 'recommend'
+      router.replace({ name: 'feed', query: {} }).catch(() => {})
     }
+    await reloadFeed()
   },
 )
 
@@ -176,7 +215,10 @@ async function loadMore() {
   loading.value = true
   error.value = ''
   try {
-    const res = await listFeed(nextCursor.value, 10)
+    const res =
+      feedTab.value === 'following'
+        ? await listFollowingFeed(nextCursor.value, 10)
+        : await listFeed(nextCursor.value, 10)
     items.value.push(...res.items)
     nextCursor.value = res.next_cursor
     if (!res.next_cursor || res.items.length === 0) done.value = true
@@ -287,12 +329,34 @@ function goFullscreen(i: number) {
 
 <template>
   <div ref="container" class="feed-page" :class="{ 'is-locked': commentOpen }">
-    <!-- 顶部品牌角标 -->
+    <!-- 顶部品牌角标 + 推荐/关注切换 -->
     <div class="top-bar">
       <router-link to="/" class="brand-corner" aria-label="FeedSystem 首页">
         <span class="brand-dot" aria-hidden="true"></span>
         <span class="brand-name">FeedSystem</span>
       </router-link>
+
+      <div class="feed-tabs" role="tablist" aria-label="Feed 切换">
+        <button
+          class="feed-tab"
+          role="tab"
+          :aria-selected="feedTab === 'recommend'"
+          :class="{ 'is-active': feedTab === 'recommend' }"
+          @click="switchTab('recommend')"
+        >
+          推荐
+        </button>
+        <button
+          class="feed-tab"
+          role="tab"
+          :aria-selected="feedTab === 'following'"
+          :class="{ 'is-active': feedTab === 'following' }"
+          @click="switchTab('following')"
+        >
+          关注
+        </button>
+      </div>
+
       <span class="index-chip" aria-hidden="true">{{ activeIdx + 1 }} / {{ items.length }}</span>
     </div>
 
@@ -302,9 +366,19 @@ function goFullscreen(i: number) {
       <button class="btn btn-ghost" @click="loadMore">重试</button>
     </div>
     <div v-else-if="items.length === 0 && done && !loading" class="full-state">
-      <p class="state-title">时间线还是空的</p>
-      <p class="state-hint">去发布你的第一条视频吧。</p>
-      <router-link to="/publish" class="btn btn-primary">发布视频</router-link>
+      <template v-if="feedTab === 'following'">
+        <p class="state-title">关注流还是空的</p>
+        <p class="state-hint">你关注的人还没有发布作品，去热门发现并关注更多创作者。</p>
+        <div class="full-state-actions">
+          <router-link to="/popular" class="btn btn-primary">去热门看看</router-link>
+          <button class="btn btn-ghost" @click="switchTab('recommend')">回到推荐</button>
+        </div>
+      </template>
+      <template v-else>
+        <p class="state-title">时间线还是空的</p>
+        <p class="state-hint">去发布你的第一条视频吧。</p>
+        <router-link to="/publish" class="btn btn-primary">发布视频</router-link>
+      </template>
     </div>
 
     <section
@@ -496,11 +570,49 @@ function goFullscreen(i: number) {
   left: 0;
   right: 0;
   z-index: 7;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
   padding: 14px 16px;
   pointer-events: none;
+}
+
+.brand-corner {
+  justify-self: start;
+}
+
+.index-chip {
+  justify-self: end;
+}
+
+/* 推荐 / 关注 切换（Industrial 扁平分段控件） */
+.feed-tabs {
+  justify-self: center;
+  pointer-events: auto;
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--border-strong);
+}
+
+.feed-tab {
+  padding: 5px 16px;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  transition: var(--trans-colors);
+}
+
+.feed-tab:hover {
+  color: var(--text);
+}
+
+.feed-tab.is-active {
+  color: var(--on-accent);
+  background: var(--signal);
 }
 
 .brand-corner {
@@ -728,6 +840,14 @@ function goFullscreen(i: number) {
   padding: var(--sp-6);
 }
 
+.full-state-actions {
+  display: flex;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .sentinel {
   height: 1px;
 }
@@ -778,6 +898,10 @@ function goFullscreen(i: number) {
 @media (max-width: 640px) {
   .top-bar {
     padding: 12px 12px;
+  }
+  .feed-tab {
+    padding: 5px 12px;
+    font-size: var(--font-size-xs);
   }
   .index-chip {
     padding: 4px 10px;

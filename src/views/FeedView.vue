@@ -188,10 +188,20 @@ async function switchTab(tab: 'recommend' | 'following') {
     router.push({ name: 'login', query: { redirect: '/' } })
     return
   }
-  feedTab.value = tab
+  // 通过路由 query 驱动，由下方 watch 统一同步 tab 并重载
   router.replace({ name: 'feed', query: tab === 'following' ? { tab: 'following' } : {} }).catch(() => {})
-  await reloadFeed()
 }
+
+// 路由 query（导航栏切换 / 深链）变化时同步 tab 并重载
+watch(
+  () => route.query.tab,
+  (t) => {
+    const target: 'recommend' | 'following' = t === 'following' && auth.isLoggedIn ? 'following' : 'recommend'
+    if (target === feedTab.value) return
+    feedTab.value = target
+    reloadFeed()
+  },
+)
 
 // 登录态变化时刷新 feed（status 盖章与关注态依赖登录）；登出时若在关注流则回到推荐
 watch(
@@ -329,33 +339,12 @@ function goFullscreen(i: number) {
 
 <template>
   <div ref="container" class="feed-page" :class="{ 'is-locked': commentOpen }">
-    <!-- 顶部品牌角标 + 推荐/关注切换 -->
+    <!-- 顶部品牌角标 -->
     <div class="top-bar">
       <router-link to="/" class="brand-corner" aria-label="FeedSystem 首页">
         <span class="brand-dot" aria-hidden="true"></span>
         <span class="brand-name">FeedSystem</span>
       </router-link>
-
-      <div class="feed-tabs" role="tablist" aria-label="Feed 切换">
-        <button
-          class="feed-tab"
-          role="tab"
-          :aria-selected="feedTab === 'recommend'"
-          :class="{ 'is-active': feedTab === 'recommend' }"
-          @click="switchTab('recommend')"
-        >
-          推荐
-        </button>
-        <button
-          class="feed-tab"
-          role="tab"
-          :aria-selected="feedTab === 'following'"
-          :class="{ 'is-active': feedTab === 'following' }"
-          @click="switchTab('following')"
-        >
-          关注
-        </button>
-      </div>
 
       <span class="index-chip" aria-hidden="true">{{ activeIdx + 1 }} / {{ items.length }}</span>
     </div>
@@ -570,49 +559,11 @@ function goFullscreen(i: number) {
   left: 0;
   right: 0;
   z-index: 7;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
   padding: 14px 16px;
   pointer-events: none;
-}
-
-.brand-corner {
-  justify-self: start;
-}
-
-.index-chip {
-  justify-self: end;
-}
-
-/* 推荐 / 关注 切换（Industrial 扁平分段控件） */
-.feed-tabs {
-  justify-self: center;
-  pointer-events: auto;
-  display: inline-flex;
-  gap: 2px;
-  padding: 2px;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid var(--border-strong);
-}
-
-.feed-tab {
-  padding: 5px 16px;
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--text-3);
-  transition: var(--trans-colors);
-}
-
-.feed-tab:hover {
-  color: var(--text);
-}
-
-.feed-tab.is-active {
-  color: var(--on-accent);
-  background: var(--signal);
 }
 
 .brand-corner {

@@ -23,11 +23,14 @@ async function loadMore() {
     asOf.value = res.as_of
     offset.value = res.offset
     hasMore.value = res.has_more
+    // 后端空热榜返回 200 + 空列表（不再 500）；首屏成功但无数据 → 空态
+    if (items.value.length === 0) {
+      empty.value = true
+      hasMore.value = false
+    }
   } catch (e) {
-    // 后端空热榜会 500「视频数据获取失败」→ 前端视作空态
     hasMore.value = false
-    if (items.value.length === 0) empty.value = true
-    else error.value = (e as Error).message
+    error.value = (e as Error).message
   } finally {
     loading.value = false
   }
